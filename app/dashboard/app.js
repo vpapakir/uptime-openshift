@@ -183,6 +183,6 @@ app.get('/tags/:name', function(req, res, next) {
 });
 
 if (!module.parent) {
-  app.listen(3000);
-  console.log('Express started on port 3000');
+  app.listen(process.env.OPENSHIFT_NODEJS_PORT);
+  console.log('Express started on port: '+ process.env.OPENSHIFT_NODEJS_PORT);
 }

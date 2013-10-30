@@ -3,7 +3,7 @@ var config     = require('config');
 var semver     = require('semver');
 
 // configure mongodb
-mongoose.connect(config.mongodb.connectionString || 'mongodb://' + config.mongodb.user + ':' + config.mongodb.password + '@' + config.mongodb.server +'/' + config.mongodb.database);
+mongoose.connect(process.env.OPENSHIFT_MONGODB_DB_URL +'uptime');
 mongoose.connection.on('error', function (err) {
   console.error('MongoDB error: ' + err.message);
   console.error('Make sure a mongoDB server is running and accessible by this application');
@@ -14,7 +14,7 @@ mongoose.connection.on('open', function (err) {
     if (err) {
       if (err.name === "MongoError" && (err.errmsg === 'need to login' || err.errmsg === 'unauthorized')) {
         console.log('Forcing MongoDB authentication');
-        mongoose.connection.db.authenticate(config.mongodb.user, config.mongodb.password, function(err) {
+        mongoose.connection.db.authenticate(process.env.OPENSHIFT_MONGODB_DB_USERNAME, process.env.OPENSHIFT_MONGODB_DB_PASSWORD, function(err) {
           if (!err) return;
           console.error(err);
           process.exit(1);

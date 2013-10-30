@@ -1,159 +1,145 @@
-#!/bin/env node
-//  OpenShift sample Node application
-var express = require('express');
-var fs      = require('fs');
-
-
-/**
- *  Define the sample application.
+/*
+ * Monitor remote server uptime.
  */
-var SampleApp = function() {
 
-    //  Scope.
-    var self = this;
+var http       = require('http');
+var express    = require('express');
+var config     = require('config');
+var socketIo   = require('socket.io');
+var fs         = require('fs');
+var monitor    = require('./lib/monitor');
+var analyzer   = require('./lib/analyzer');
+var CheckEvent = require('./models/checkEvent');
+var Ping       = require('./models/ping');
+var PollerCollection = require('./lib/pollers/pollerCollection');
+var apiApp     = require('./app/api/app');
+var dashboardApp = require('./app/dashboard/app');
 
+// database
 
-    /*  ================================================================  */
-    /*  Helper functions.                                                 */
-    /*  ================================================================  */
+var mongoose   = require('./bootstrap');
 
-    /**
-     *  Set up server IP address and port # using env variables/defaults.
-     */
-    self.setupVariables = function() {
-        //  Set the environment variables we need.
-        self.ipaddress = process.env.OPENSHIFT_NODEJS_IP;
-        self.port      = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+var a = analyzer.createAnalyzer(config.analyzer);
+a.start();
 
-        if (typeof self.ipaddress === "undefined") {
-            //  Log errors on OpenShift but continue w/ 127.0.0.1 - this
-            //  allows us to run/test the app locally.
-            console.warn('No OPENSHIFT_NODEJS_IP var, using 127.0.0.1');
-            self.ipaddress = "127.0.0.1";
-        };
-    };
+// web front
 
+var app = module.exports = express();
+var server = http.createServer(app);
 
-    /**
-     *  Populate the cache.
-     */
-    self.populateCache = function() {
-        if (typeof self.zcache === "undefined") {
-            self.zcache = { 'index.html': '' };
-        }
+app.configure(function(){
+  app.use(app.router);
+  // the following middlewares are only necessary for the mounted 'dashboard' app, 
+  // but express needs it on the parent app (?) and it therefore pollutes the api
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());
+  app.use(express.cookieParser('Z5V45V6B5U56B7J5N67J5VTH345GC4G5V4'));
+  app.use(express.cookieSession({
+    key:    'uptime',
+    secret: 'FZ5HEE5YHD3E566756234C45BY4DSFZ4',
+    proxy:  true,
+    cookie: { maxAge: 60 * 60 * 1000 }
+  }));
+  app.set('pollerCollection', new PollerCollection());
+});
 
-        //  Local cache for static content.
-        self.zcache['index.html'] = fs.readFileSync('./index.html');
-    };
+// load plugins (may add their own routes and middlewares)
+config.plugins.forEach(function(pluginName) {
+  var plugin = require(pluginName);
+  if (typeof plugin.initWebApp !== 'function') return;
+  console.log('loading plugin %s on app', pluginName);
+  plugin.initWebApp({
+    app:       app,
+    api:       apiApp,       // mounted into app, but required for events
+    dashboard: dashboardApp, // mounted into app, but required for events
+    io:        io,
+    config:    config,
+    mongoose:  mongoose
+  });
+});
 
+app.emit('beforeFirstRoute', app, apiApp);
 
-    /**
-     *  Retrieve entry (content) from cache.
-     *  @param {string} key  Key identifying content to retrieve from cache.
-     */
-    self.cache_get = function(key) { return self.zcache[key]; };
+app.configure('development', function() {
+  if (config.verbose) mongoose.set('debug', true);
+  app.use(express.static(__dirname + '/public'));
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+});
 
+app.configure('production', function() {
+  var oneYear = 31557600000;
+  app.use(express.static(__dirname + '/public', { maxAge: oneYear }));
+  app.use(express.errorHandler());
+});
 
-    /**
-     *  terminator === the termination handler
-     *  Terminate server on receipt of the specified signal.
-     *  @param {string} sig  Signal to terminate on.
-     */
-    self.terminator = function(sig){
-        if (typeof sig === "string") {
-           console.log('%s: Received %s - terminating sample app ...',
-                       Date(Date.now()), sig);
-           process.exit(1);
-        }
-        console.log('%s: Node server stopped.', Date(Date.now()) );
-    };
+// Routes
+app.emit('beforeApiRoutes', app, apiApp);
+app.use('/api', apiApp);
 
+app.emit('beforeDashboardRoutes', app, dashboardApp);
+app.use('/dashboard', dashboardApp);
+app.get('/', function(req, res) {
+  res.redirect('/dashboard/events');
+});
 
-    /**
-     *  Setup termination handlers (for exit and a list of signals).
-     */
-    self.setupTerminationHandlers = function(){
-        //  Process on exit and signals.
-        process.on('exit', function() { self.terminator(); });
+app.get('/favicon.ico', function(req, res) {
+  res.redirect(301, '/dashboard/favicon.ico');
+});
 
-        // Removed 'SIGPIPE' from the list - bugz 852598.
-        ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT',
-         'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM'
-        ].forEach(function(element, index, array) {
-            process.on(element, function() { self.terminator(element); });
-        });
-    };
+app.emit('afterLastRoute', app);
 
+// Sockets
+var io = socketIo.listen(server);
 
-    /*  ================================================================  */
-    /*  App server functions (main app logic here).                       */
-    /*  ================================================================  */
+io.configure('production', function() {
+  io.enable('browser client etag');
+  io.set('log level', 1);
+});
 
-    /**
-     *  Create the routing table entries + handlers for the application.
-     */
-    self.createRoutes = function() {
-        self.routes = { };
+io.configure('development', function() {
+  if (!config.verbose) io.set('log level', 1);
+});
 
-        self.routes['/asciimo'] = function(req, res) {
-            var link = "http://i.imgur.com/kmbjB.png";
-            res.send("<html><body><img src='" + link + "'></body></html>");
-        };
+CheckEvent.on('afterInsert', function(event) {
+  io.sockets.emit('CheckEvent', event.toJSON());
+});
 
-        self.routes['/'] = function(req, res) {
-            res.setHeader('Content-Type', 'text/html');
-            res.send(self.cache_get('index.html') );
-        };
-    };
+io.sockets.on('connection', function(socket) {
+  socket.on('set check', function(check) {
+    socket.set('check', check);
+  });
+  Ping.on('afterInsert', function(ping) {
+    socket.get('check', function(err, check) {
+      if (ping.check == check) {
+        socket.emit('ping', ping);
+      }
+    });
+  });
+});
 
+// old way to load plugins, kept for BC
+fs.exists('./plugins/index.js', function(exists) {
+  if (exists) {
+    var pluginIndex = require('./plugins');
+    var initFunction = pluginIndex.init || pluginIndex.initWebApp;
+    if (typeof initFunction === 'function') {
+      initFunction({
+        app:       app,
+        api:       apiApp,       // mounted into app, but required for events
+        dashboard: dashboardApp, // mounted into app, but required for events
+        io:        io,
+        config:    config,
+        mongoose:  mongoose
+      });
+    }
+  }
+});
 
-    /**
-     *  Initialize the server (express) and create the routes and register
-     *  the handlers.
-     */
-    self.initializeServer = function() {
-        self.createRoutes();
-        self.app = express.createServer();
+var port = process.env.OPENSHIFT_NODEJS_PORT;
+server.listen(port);
+console.log("Express server listening on port %d in %s mode", port, app.settings.env);
 
-        //  Add handlers for the app (from the routes).
-        for (var r in self.routes) {
-            self.app.get(r, self.routes[r]);
-        }
-    };
-
-
-    /**
-     *  Initializes the sample application.
-     */
-    self.initialize = function() {
-        self.setupVariables();
-        self.populateCache();
-        self.setupTerminationHandlers();
-
-        // Create the express server and routes.
-        self.initializeServer();
-    };
-
-
-    /**
-     *  Start the server (starts up the sample application).
-     */
-    self.start = function() {
-        //  Start the app on the specific interface (and port).
-        self.app.listen(self.port, self.ipaddress, function() {
-            console.log('%s: Node server started on %s:%d ...',
-                        Date(Date.now() ), self.ipaddress, self.port);
-        });
-    };
-
-};   /*  Sample Application.  */
-
-
-
-/**
- *  main():  Main code.
- */
-var zapp = new SampleApp();
-zapp.initialize();
-zapp.start();
-
+// monitor
+if (config.autoStartMonitor) {
+  require('./monitor');
+}

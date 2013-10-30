@@ -67,7 +67,7 @@ exports.initWebApp = function(options) {
       var renderOptions = {
         check: check,
         checkEvent: checkEvent,
-        url: config.dashboardUrl,
+        url: process.env.OPENSHIFT_APP_DNS,
         moment: moment,
         filename: filename
       };
