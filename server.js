@@ -136,7 +136,8 @@ fs.exists('./plugins/index.js', function(exists) {
 });
 
 var port = process.env.OPENSHIFT_NODEJS_PORT;
-server.listen(port);
+var ip = process.env.OPENSHIFT_NODEJS_IP;
+server.listen(port, ip);
 console.log("Express server listening on port %d in %s mode", port, app.settings.env);
 
 // monitor
