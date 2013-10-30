@@ -1,0 +1,32 @@
+<h2>Checks</h2>
+<ul id="checkUptimeBars" class="adjustedOnDateNavigation">
+</ul>
+<script id="check_template" type="text/template">
+<li>
+<div class="name">
+    <a href="{{=  route + '/checks/' + stat.check._id +'?type=' + type + '&date=' + date }}">{{= stat.check.name }}</a>
+    <a href="{{= stat.check.url }}" target="_blank"><img src="{{= route }}/images/external-link-ltr-icon.png"></a>
+</div>
+{{- uptimeBar(begin, end, new Date(stat.check.firstTested).valueOf(), stat.outages || []) }}
+</li>
+</script>
+<script>
+$(document).ready(function() {
+  var check_template = document.getElementById('check_template').innerHTML;
+  var ejs = require('ejs');
+  ejs.open = '{{';
+  ejs.close = '}}';
+  var updateChecks = function() {
+    var queryString = typeof dateInterval == 'undefined' ? '' : dateInterval.getIntervalQueryString();
+    $.getJSON('<%= url %>' + dateInterval.type + '/' + dateInterval.date, function(stats) {
+      var bars = [];
+      $.each(stats, function(index, stat) {
+        bars.push(ejs.render(check_template, { stat: stat, type: dateInterval.type, date: dateInterval.date, begin: dateInterval.begin.valueOf(), end: dateInterval.end.valueOf(), route: '<%= route %>' }))
+      });
+      $('#checkUptimeBars').html(bars.join(''));
+    });
+  };
+  updateChecks();
+  dateInterval.on('change-date', updateChecks);
+});
+</script>
