@@ -15,7 +15,7 @@ var CheckEvent = new Schema({
 
 mongoose.model('CheckEvent', CheckEvent);
 
-mongoose.connect(process.env.OPENSHIFT_MONGODB_DB_URL +'/uptime');
+mongoose.connect(process.env.OPENSHIFT_MONGODB_DB_URL + process.env.OPENSHIFT_APP_NAME);
 mongoose.connection.on('error', function (err) {
   console.error('MongoDB error: ' + err.message);
   console.error('Make sure a mongoDB server is running and accessible by this application')
