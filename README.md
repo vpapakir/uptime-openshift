@@ -1,3 +1,21 @@
+uptime-openshift
+================
+
+Port of Uptime (https://github.com/fzaninotto/uptime) to run on Openshift Online
+
+Running on OpenShift
+----------------------------
+
+Create an account at http://openshift.redhat.com/
+
+Create a nodejs-0.10 + mongodb-2.2 application based on this repo's code (you can call your application whatever you want)
+
+    rhc app create uptime nodejs-0.10 mongodb-2.2 --from-code=https://github.com/rkmallik/uptime-openshift
+
+That's it, you can now checkout your application at:
+
+    http://$appname-$yournamespace.rhcloud.com
+
 uptime
 ======
 
@@ -231,3 +249,4 @@ TODO
 * Account for scheduled maintenance (and provide two QoS calculations: with and without scheduled maintenance)
 * Allow for JavaScript execution in the monitored resources by using a headless browser (probably zombie.js)
 * Unit tests
+=======
