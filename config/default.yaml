@@ -42,8 +42,8 @@ email:
     paused:    false
     restarted: false
   message:           
-    from:            Uptime Checker	# The message sender, e.g. 'Fred Foo <foo@blurdybloop.com>'
-    to:              ronak.mallik@gmail.com # The message recipient, e.g. 'bar@blurdybloop.com, baz@blurdybloop.com'
+    from:            Uptime Checker
+    to:              ronak.mallik@gmail.com 
   dashboardUrl: 'http://localhost:8082'
 
 basicAuth:
