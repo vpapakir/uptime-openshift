@@ -48,5 +48,5 @@ email:
 
 basicAuth:
   username:    admin
-  password:    password
+  password:    Monkees123
 verbose: true # only used in dev
