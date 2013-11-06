@@ -46,7 +46,7 @@ Features
 * Powerful plugin system to ease extension and customization
 * Easy installation and zero administration
 
-Installing Uptime
+Installing Uptime directly on an OS (Unecessary if you're using Openshift)
 -----------------
 
 Uptime 3.2 requires Node.js 0.10 and MongoDB 2.1. Older versions provide compatibility with Node 0.8 (Uptime v3.1) and 0.6 (Uptime v1.4).
@@ -81,12 +81,18 @@ By default, the web UI runs on port 8082, so just browse to
 
     http://localhost:8082/
 
+In Openshift, just browse to
+
+    http://$appname-$yournamespace.rhcloud.com
+
 And you're ready to begin. Create your first check by entering an URL, wait for the first ping, and you'll soon see data flowing through your charts!
 
 Configuring
 -----------
 
 Uptime uses [node-config](https://github.com/lorenwest/node-config) to allow YAML configuration and environment support. Here is the default configuration, taken from `config/default.yaml`:
+
+Note, mongodb connection information and uptime ports defined in default.yaml are ignored when running on openshift. These values are loaded in the .js files as Openshift envioronment variables.
 
 ```yaml
 mongodb:

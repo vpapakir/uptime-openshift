@@ -12,7 +12,7 @@ mongoose.connection.on('error', function (err) {
 mongoose.connection.on('open', function (err) {
   mongoose.connection.db.admin().serverStatus(function(err, data) {
     if (err) {
-      if (err.name === "MongoError" && (err.errmsg === 'need to login' || err.errmsg === 'unauthorized')) {
+      if (err.name === "MongoError" && (err.errmsg === 'need to login' || err.errmsg === 'unauthorized') && !config.mongodb.connectionString) {
         console.log('Forcing MongoDB authentication');
         mongoose.connection.db.authenticate(process.env.OPENSHIFT_MONGODB_DB_USERNAME, process.env.OPENSHIFT_MONGODB_DB_PASSWORD, function(err) {
           if (!err) return;
