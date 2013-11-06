@@ -26,8 +26,8 @@ plugins:
   - ./plugins/console
   - ./plugins/patternMatcher
   - ./plugins/httpOptions
-  - ./plugins/email
-  - ./plugins/basicAuth
+  # - ./plugins/email
+  # - ./plugins/basicAuth
 
 email:
   method:      SMTP  # possible methods are SMTP, SES, or Sendmail
@@ -35,7 +35,7 @@ email:
     service:   Gmail # see https://github.com/andris9/Nodemailer/blob/master/lib/wellknown.js for well-known services
     auth:            
       user:          # Enter your "from" e-mail address
-      pass:          # Enter your "from" -mail password
+      pass:          # Enter your "from" e-mail password
   event:
     up:        true
     down:      true
@@ -43,7 +43,7 @@ email:
     restarted: false
   message:           
     from:            Uptime Alert Bot
-    to:              #Enter the e-mail address you want to notify
+    to:              # Enter the e-mail address you want to notify
   dashboardUrl: 'http://localhost:8082'
 
 basicAuth:
