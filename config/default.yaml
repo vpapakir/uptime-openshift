@@ -34,19 +34,19 @@ email:
   transport:         # see https://github.com/andris9/nodemailer for transport options
     service:   Gmail # see https://github.com/andris9/Nodemailer/blob/master/lib/wellknown.js for well-known services
     auth:            
-      user:          prospermine@gmail.com
-      pass:          Monkees123
+      user:          # Enter your "from" e-mail address
+      pass:          # Enter your "from" -mail password
   event:
     up:        true
     down:      true
     paused:    false
     restarted: false
   message:           
-    from:            Uptime Checker
-    to:              ronak.mallik@gmail.com 
+    from:            Uptime Alert Bot
+    to:              #Enter the e-mail address you want to notify
   dashboardUrl: 'http://localhost:8082'
 
 basicAuth:
   username:    admin
-  password:    Monkees123
+  password:    admin
 verbose: true # only used in dev
