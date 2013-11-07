@@ -34,19 +34,19 @@ email:
   transport:         # see https://github.com/andris9/nodemailer for transport options
     service:   Gmail # see https://github.com/andris9/Nodemailer/blob/master/lib/wellknown.js for well-known services
     auth:            
-      user:          # Enter your "from" e-mail address
-      pass:          # Enter your "from" e-mail password
+      user:          # The email account username, e.g. 'username@gmail.com'
+      pass:          # The email account password, e.G. 'password'
   event:
     up:        true
     down:      true
     paused:    false
     restarted: false
   message:           
-    from:            Uptime Alert Bot
-    to:              # Enter the e-mail address you want to notify
+    from:            # The message sender, e.g. 'Fred Foo <foo@blurdybloop.com>'
+    to:              # The message recipient, e.g. 'bar@blurdybloop.com, baz@blurdybloop.com'
   dashboardUrl: 'http://localhost:8082'
 
 basicAuth:
   username:    admin
-  password:    admin
+  password:    password
 verbose: true # only used in dev
