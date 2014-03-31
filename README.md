@@ -8,9 +8,9 @@ Running on OpenShift
 
 Create an account at http://openshift.redhat.com/
 
-Create a nodejs-0.10 + mongodb-2.2 application based on this repo's code (you can call your application whatever you want)
+Create a nodejs-0.10 + mongodb-2.4 application based on this repo's code (you can call your application whatever you want)
 
-    rhc app create uptime nodejs-0.10 mongodb-2.2 --from-code=https://github.com/rkmallik/uptime-openshift
+    rhc app create uptime nodejs-0.10 mongodb-2.4 --from-code=https://github.com/rkmallik/uptime-openshift
 
 That's it, you can now checkout your application at:
 
