@@ -3,6 +3,7 @@
  */
 
 var http       = require('http');
+var url        = require('url');
 var express    = require('express');
 var config     = require('config');
 var socketIo   = require('socket.io');
@@ -136,14 +137,23 @@ fs.exists('./plugins/index.js', function(exists) {
 });
 
 module.exports = app;
+
+var monitorInstance;
+
 if (!module.parent) {
   var port = process.env.OPENSHIFT_NODEJS_PORT;
   var ip = process.env.OPENSHIFT_NODEJS_IP;
   server.listen(port, ip);
   console.log("Express server listening on port %d in %s mode", port, app.settings.env);
+  server.on('error', function(e) {
+    if (monitorInstance) {
+      monitorInstance.stop();
+      process.exit(1);
+    }
+  });
 }
 
 // monitor
 if (config.autoStartMonitor) {
-  require('./monitor');
+  monitorInstance = require('./monitor');
 }
