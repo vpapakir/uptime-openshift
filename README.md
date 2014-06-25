@@ -6,9 +6,19 @@ Port of Uptime (https://github.com/fzaninotto/uptime) to run on Openshift Online
 Running on OpenShift
 ----------------------------
 
-Create an account at http://openshift.redhat.com/
+Create an account at http://openshift.redhat.com/ , don't forget to create a namespace and install Git, Ruby and the client tools.
 
-Create a nodejs-0.10 + mongodb-2.4 application based on this repo's code (you can call your application whatever you want)
+Install the client tools on your machine if you have not already done so:
+
+    sudo gem install rhc
+
+After the OpenShift client tools are installed, run:
+
+    rhc setup
+
+The OpenShift interactive setup wizard displays and prompts you to complete the rest of the process. If you cannot run the OpenShift client tools at this point, please contact us on IRC or post in our forums for more assistance.
+
+Now, create a nodejs-0.10 + mongodb-2.4 application based on this repo's code (you can call your application whatever you want)
 
     rhc app create uptime nodejs-0.10 mongodb-2.4 --from-code=https://github.com/rkmallik/uptime-openshift
 
