@@ -15,13 +15,14 @@
     "socket.io": "2.4.0",
     "semver":    "7.3.2",
     "moment":    "2.19.3",
-    "nodemailer": "0.3.35",
+    "nodemailer": "6.6.1",
     "js-yaml": "3.14.0",
     "webpagetest": "0.2.0"
   },
   "devDependencies": {
     "mocha": "1.7.x",
-    "should": "1.1.0"
+    "should": "1.1.0",
+    "nodemailer": "6.6.1"
   },
   "keywords": ["uptime", "monitoring", "api", "check"],
   "repository": "https://github.com/fzaninotto/uptime",
